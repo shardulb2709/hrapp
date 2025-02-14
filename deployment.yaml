@@ -16,7 +16,7 @@ spec:
       - name: hrapp  
         image: shardultest.azurecr.io/hrapp:latest  
         ports:  
-        - containerPort: 8000
+        - containerPort: 5000
         env:  
         - name: DATABASE_HOST  
           value: "pgfs3n.postgres.database.azure.com"  
