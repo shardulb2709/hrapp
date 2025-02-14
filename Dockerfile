@@ -5,9 +5,11 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1  
   
 # Set working directory  
-WORKDIR C:\Users\sborhade\hrapp  
+WORKDIR /app  
   
 # Install dependencies  
+
+COPY requirements.txt/app/
  
 RUN pip install --upgrade pip  
 RUN pip install -r requirements.txt  
@@ -16,7 +18,7 @@ RUN pip install -r requirements.txt
 COPY . .  
   
 # Expose port (change if your app uses a different port)  
-EXPOSE 8000  
+EXPOSE 5000 
   
 # Command to run the application  
 CMD ["python", "hrapp.py"]
