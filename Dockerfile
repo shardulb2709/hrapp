@@ -1,14 +1,14 @@
-FROM python:3.9-slim  
+FROM --platform=linux/amd64 python:3.9
   
 # Set environment variables  
 ENV PYTHONDONTWRITEBYTECODE=1  
 ENV PYTHONUNBUFFERED=1  
   
 # Set working directory  
-WORKDIR /home/sborhade/hrapp  
+WORKDIR C:\Users\sborhade\hrapp  
   
 # Install dependencies  
-COPY requirements.txt .  
+ 
 RUN pip install --upgrade pip  
 RUN pip install -r requirements.txt  
   

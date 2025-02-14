@@ -1,0 +1,30 @@
+apiVersion: apps/v1  
+kind: Deployment  
+metadata:  
+  name: hrapp-deployment  
+spec:  
+  replicas: 2  
+  selector:  
+    matchLabels:  
+      app: hrapp  
+  template:  
+    metadata:  
+      labels:  
+        app: hrapp  
+    spec:  
+      containers:  
+      - name: hrapp  
+        image: shardultest.azurecr.io/hrapp:latest  
+        ports:  
+        - containerPort: 8000
+        env:  
+        - name: DATABASE_HOST  
+          value: "pgfs3n.postgres.database.azure.com"  
+        - name: DATABASE_USER  
+          value: "shardul"  
+        - name: DATABASE_PASSWORD  
+          value: "Admin@1234"  
+        - name: DATABASE_NAME  
+          value: "postgres" 
+        - name: DATABASE_PORT  
+          value: "5432"

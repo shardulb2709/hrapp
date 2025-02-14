@@ -8,7 +8,7 @@ DB_CONFIG = {
     "dbname": "postgres",
     "user": "shardul",
     "password": "Admin@1234",
-    "host": "postgres-service",  # This should match the Kubernetes Service name
+    "host": "pgfs3n.postgres.database.azure.com",  # This should match the Kubernetes Service name
     "port": "5432"
 }
 
