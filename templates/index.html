@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Records</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("JavaScript Loaded!");
+
+            document.getElementById("insertForm").addEventListener("submit", submitEmployee);
+            document.getElementById("findForm").addEventListener("submit", findEmployee);
+
+            fetchEmployees(); // Load employee data on page load
+        });
+
+        function submitEmployee(event) {
+            event.preventDefault();
+
+            let emp_name = document.getElementById("emp_name").value;
+            let salary = document.getElementById("salary").value;
+            let department = document.getElementById("department").value;
+
+            fetch("/insert", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ emp_name, salary, department })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || data.error);
+                fetchEmployees(); // Refresh employee table after insert
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function findEmployee(event) {
+            event.preventDefault();
+            let searchName = document.getElementById("search_name").value;
+
+            console.log("Searching for employee:", searchName); // Debugging
+
+            fetch(`/find?emp_name=${searchName}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("API Response:", data); // Debugging
+
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else if (data.length === 0) {
+                    alert("No employee found.");
+                } else {
+                    let result = `Employee ID: ${data[0][0]}\nName: ${data[0][1]}\nSalary: ${data[0][2]}\nDepartment: ${data[0][3]}`;
+                    alert(result);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function fetchEmployees() {
+            fetch('/employees')
+                .then(response => response.json())
+                .then(data => {
+                    let table = document.getElementById("employeeTable");
+                    table.innerHTML = "<tr><th>ID</th><th>Name</th><th>Salary</th><th>Department</th></tr>";
+                    data.forEach(emp => {
+                        let row = table.insertRow();
+                        row.insertCell(0).innerHTML = emp[0];  // ID
+                        row.insertCell(1).innerHTML = emp[1];  // Name
+                        row.insertCell(2).innerHTML = emp[2];  // Salary
+                        row.insertCell(3).innerHTML = emp[3];  // Department
+                    });
+                })
+                .catch(error => console.error("Error fetching employees:", error));
+        }
+    </script>
+</head>
+<body>
+    <h1>Employee Records</h1>
+
+    <!-- Employee Insertion Form -->
+    <h3>Add Employee</h3>
+    <form id="insertForm">
+        <label for="emp_name">Name:</label>
+        <input type="text" id="emp_name" required><br>
+
+        <label for="salary">Salary:</label>
+        <input type="number" id="salary" required><br>
+
+        <label for="department">Department:</label>
+        <input type="text" id="department" required><br>
+
+        <button type="submit">Add Employee</button>
+    </form>
+
+    <hr>
+
+    <!-- Employee Search Form -->
+    <h3>Find Employee</h3>
+    <form id="findForm">
+        <label for="search_name">Employee Name:</label>
+        <input type="text" id="search_name" required><br>
+
+        <button type="submit">Find Employee</button>
+    </form>
+
+    <hr>
+
+    <!-- Employee Table -->
+    <h3>All Employees</h3>
+    <table id="employeeTable" border="1">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Salary</th>
+            <th>Department</th>
+        </tr>
+    </table>
+</body>
+</html>

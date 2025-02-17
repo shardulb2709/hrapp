@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.9
+FROM --platform=linux/amd64 python:3.11-slim-buster as build
   
 # Set environment variables  
 ENV PYTHONDONTWRITEBYTECODE=1  
@@ -9,7 +9,7 @@ WORKDIR /app
   
 # Install dependencies  
 
-COPY requirements.txt/app/
+COPY requirements.txt /app
  
 RUN pip install --upgrade pip  
 RUN pip install -r requirements.txt  

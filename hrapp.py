@@ -1,60 +1,89 @@
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
 import psycopg2
 
-app = Flask(__name__)
+#app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")
 
-# PostgreSQL Connection
+# Database Configuration
 DB_CONFIG = {
     "dbname": "postgres",
     "user": "shardul",
     "password": "Admin@1234",
-    "host": "pgfs3n.postgres.database.azure.com",  # This should match the Kubernetes Service name
+    "host": "pgfs3n.postgres.database.azure.com",
     "port": "5432"
 }
 
-def get_db_connection():
+def connect_db():   
     return psycopg2.connect(**DB_CONFIG)
 
-@app.route('/employees', methods=['POST'])
+@app.route('/')
+def index():
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM employees")
+        employees = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return render_template("index.html", employees=employees)
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+# Insert Employee
+@app.route('/insert', methods=['POST'])
 def insert_employee():
-    """Insert Employee Data"""
-    data = request.json
-    emp_id = data.get('emp_id')
-    emp_name = data.get('emp_name')
-    salary = data.get('salary')
-
-    if not emp_id or not emp_name or not salary:
-        return jsonify({"error": "Missing required fields"}), 400
-
     try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("INSERT INTO employees (emp_id, emp_name, salary) VALUES (%s, %s, %s)", 
-                    (emp_id, emp_name, salary))
-        conn.commit()
-        cur.close()
-        conn.close()
-        return jsonify({"message": "Employee added successfully!"}), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/employees/<int:emp_id>', methods=['GET'])
-def get_employee(emp_id):
-    """Fetch Employee Data"""
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT emp_id, emp_name, salary FROM employees WHERE emp_id = %s", (emp_id,))
-        employee = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        if employee:
-            return jsonify({"emp_id": employee[0], "emp_name": employee[1], "salary": employee[2]})
+        # Check if request contains JSON data
+        if request.is_json:
+            data = request.json
         else:
-            return jsonify({"error": "Employee not found"}), 404
+            # Extract form data from the HTML form submission
+            data = request.form
+
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO employees (emp_name, salary, department) VALUES (%s, %s, %s) RETURNING emp_id",
+            (data['emp_name'], data['salary'], data['department'])
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"message": "Employee inserted successfully!"})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)})
+    
+@app.route('/find', methods=['GET'])
+def find_employee():
+    emp_name = request.args.get('emp_name', '')
+
+    print(f"Searching for employee: {emp_name}")  # Debugging
+
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM employees WHERE emp_name ILIKE %s", (emp_name,))
+        employee = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        print("Employee found:", employee)  # Debugging
+        return jsonify(employee)
+    except Exception as e:
+        return jsonify({"error": str(e)})    
+# Fetch Employees
+@app.route('/employees', methods=['GET','POST'])
+def get_employees():
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM employees")
+        employees = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return jsonify(employees)
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
