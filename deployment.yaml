@@ -14,11 +14,12 @@ spec:
     spec:  
       containers:  
       - name: hrapp
-        image: shardultest.azurecr.io/hrapp:latest  
+        image: shardultest.azurecr.io/hrapp:latest
+        command: ["python", "hrapp.py"]
         ports:  
         - containerPort: 5000
         env:  
-        - name: DATABASE_HOST  
+        - name: DATABASE_HOST
           value: "pgfs3n.postgres.database.azure.com"  
         - name: DATABASE_USER  
           value: "shardul"  
